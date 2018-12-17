@@ -1,0 +1,20 @@
+export default [
+  'click',
+  'dblclick',
+  'mouseup',
+  'mousedown',
+  'mousemove',
+  'mouseover',
+  'mouseout',
+  'mouseenter',
+  'mouseleave',
+  'focus',
+  'blur',
+  'change',
+  'submit',
+  'scroll',
+  'resize',
+  'keydown',
+  'keyup',
+  'keypress'
+];
