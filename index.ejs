@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width">
   <title><%= htmlWebpackPlugin.options.title %></title>
+  <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic|Shadows+Into+Light" rel="stylesheet">
 </head>
 <body>
   <header>
@@ -12,14 +13,19 @@
       <h4>The bookstore by Vanilla_Coding</h4>
     </div>
     <div class="search_bar">
-      <input type="text" id="search_box" placeholder="subject, author, publisher"></inpurt>
-      <button id="go_search">GO</button>
+      <input id="search_box" type="text" placeholder="subject, author, publisher"></inpurt>
+      <button id="search_button">GO</button>
     </div>
   </header>
-  <button id="test">pick me!</button>
-  <div id="root"></div>
+  <div id="main_content">
+    <div id="root"></div>
+  </div>
+  <div id="get_more">
+    <button id="get_more_button" class="hidden">More</button>
+  </div>
+  <button id="to_upward" class="hidden"><img src="assets/images/to_upward.png"></div></button>
   <footer>
-    <span>Any questions ? beautifulife.github.io</span>
+    <span>Any questions ? &nbsp;&nbsp;beautifulife.github.io</span>
   </footer>
 </body>
 </html>
