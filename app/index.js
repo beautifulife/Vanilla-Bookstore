@@ -59,7 +59,7 @@ function getMoreData(ev) {
 }
 
 function moveToUpward(ev) {
-  document.body.scrollIntoView({behavior: 'smooth', block: 'start', inline: 'nearest'});
+  $mainContent.scrollIntoView({behavior: 'smooth', block: 'start', inline: 'nearest'});
 }
 
 function controlByScroll(ev) {
