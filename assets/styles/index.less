@@ -1,14 +1,12 @@
 // Apply a natural box layout model to all elements
 // but allowing components to change
 // http://www.paulirish.com/2012/box-sizing-border-box-ftw/
-body {
-    overflow: auto;
-    position: relative;
-    height: 100%;
+html, body {
     margin: 0;
     box-sizing: border-box;
     font-family: 'Nanum Gothic', sans-serif;
 }
+
 *, *:before, *:after {
     box-sizing: inherit;
 }
@@ -25,6 +23,10 @@ input, button, a {
     all: unset;
 }
 
+.app {
+    overflow: auto;
+}
+
 header {
     display: flex;
     position: fixed;
@@ -35,7 +37,7 @@ header {
     height: 70px;
     border-bottom: 0.5px solid gainsboro;
     background-color: rgba(248,237,98,1);
-    transition: all 0.3s;
+    transition: top 0.3s;
 }
 
 header.scroll_bottom {
@@ -53,6 +55,7 @@ header.scroll_bottom {
     display: flex;
     align-items: center;
     padding-left: 60px;
+    cursor: pointer;
 }
 
 .service_name > h1 >img {
@@ -94,34 +97,54 @@ header.scroll_bottom {
 
 #main_content {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
     min-height: calc(100vh - 75px);
     padding-top: 70px;
 }
 
-#root {
-    padding: 20px 10px;
-    max-width: 800px;
+.content_header {
+    display: flex;
+    width: 700px;
+    margin-top: 20px;
+}
+
+.content_result {
+    flex: 1;
+}
+
+.select_view_button {
+    width: 80px;
+}
+
+.list_view_button, .card_view_button {
+    width: 40px;
+    height: 10px;
+    border: 0.5px solid gray;
 }
 
 .content_container {
     display: flex;
-    min-height: 200px;
+    width: 700px;
+    height: 200px;
+    margin: 15px 0px;
     padding: 20px;
-    margin-bottom: 15px;
     border-bottom: 0.5px solid gainsboro;
     box-shadow: 3px 3px 3px 3px rgb(160, 160, 160);
 }
 
 .container_left {
+    display: flex;
+    align-items: center;
     width: 120px;
 }
 
-.container_left > img {
+.container_left img {
     width: 120px;
     height: auto;
     max-height: 180px;
     box-shadow: 5px 5px 5px rgb(175, 175, 175);
+    cursor: pointer;
 }
 
 .container_right {
@@ -129,7 +152,7 @@ header.scroll_bottom {
     display: flex;
     flex-direction: column;
     position: relative;
-    min-height: 180px;
+    min-height: 160px;
     padding: 5px;
     padding-left: 15px;
 }
@@ -142,7 +165,7 @@ header.scroll_bottom {
 }
 
 .content_subtitle {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     font-size: 13px;
     color: rgb(40, 40, 40);
 }
@@ -171,15 +194,18 @@ header.scroll_bottom {
     color: gray;
 }
 
-.content_price > span {
+.content_price span {
+    display: inline-block;
     margin-right: 5px;
 }
 
 .content_sales_price {
+    width: 40px;
     text-decoration: line-through red;
 }
 
 .content_discount_price {
+    width: 45px;
     font-weight: 700;
     color: #208ce4;
 }
@@ -190,7 +216,7 @@ header.scroll_bottom {
 }
 
 #get_more_button {
-    width: 700px;
+    width: 600px;
     padding: 5px;
     border: 0.5px solid gray;
     border-radius: 15px;

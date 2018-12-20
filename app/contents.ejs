@@ -1,0 +1,33 @@
+<div id="main_content">
+  <div class="content_header">
+    <p class="content_result">검색결과</p>
+    <div class="select_view">
+      <button class="list_view_button"></button>
+      <button class="card_view_button"></button>
+    </div>
+  </div>
+  <div class="content_area">
+    <% contentContainer.forEach(function(item){ %>
+      <div class="content_container">
+        <div class="container_left">
+          <a href="<%= item.link %>">
+            <img src="<%= item.image %>">
+          </a>
+        </div>
+        <div class="container_right">
+          <h1 class="content_title"><%= item.title %></h1>
+          <p class="content_subtitle"><%= item.subTitle %></p>
+          <div class="content_main">
+            <p class="content_author"><%= item.author %> | <%= item.publisher %> | <%= item.pubdate %> | <a href="<%= item.link %>" class="content_url"><%= item.link %></a></p>
+            <p class="content_description"><%= item.description %></p>
+            <p class="content_price">
+              <span>구매</span>
+              <span class="content_sales_price"><%= item.price %></span>
+              <span class="content_discount_price"><%= item.discount %></span>
+            </p>
+          </div>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+</div>
