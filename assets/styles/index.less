@@ -2,9 +2,11 @@
 // but allowing components to change
 // http://www.paulirish.com/2012/box-sizing-border-box-ftw/
 html, body {
+    min-width: 600px;
     margin: 0;
     box-sizing: border-box;
     font-family: 'Nanum Gothic', sans-serif;
+    color: rgba(0, 0, 0, 0.8);
 }
 
 *, *:before, *:after {
@@ -34,6 +36,7 @@ header {
     align-items: center;
     z-index: 1;
     width: 100%;
+    min-width: 600px;
     height: 70px;
     border-bottom: 0.5px solid gainsboro;
     background-color: rgba(248,237,98,1);
@@ -41,7 +44,8 @@ header {
 }
 
 header.scroll_bottom {
-    top: -70px;
+    top: -60px;
+    opacity: 0.5;
 }
 
 .service_name {
@@ -78,21 +82,33 @@ header.scroll_bottom {
     width: 150px;
     height: 15px;
     padding: 5px;
-    border: 0.5px solid gray;
+    padding-left: 10px;
+    border: 0.5px solid rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
     font-size: 12px;
 }
 
 #search_box:focus, #search_box:hover, #search_button:hover{
     border: 0.5px solid black;
+    color: black;
 }
 
 #search_button {
     width: 25px;
     height: 25px;
     text-align: center;
-    border: 0.5px solid gray;
+    border: 0.5px solid rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
     font-size: 11px;
+    color: rgba(0, 0, 0, 0.5);
     cursor: pointer;
+}
+
+#main_content > .store_main {
+    position: absolute;
+    top: 35%;
+    width: 500px;
+    user-select: none;
 }
 
 #main_content {
@@ -105,45 +121,56 @@ header.scroll_bottom {
 
 .content_header {
     display: flex;
-    width: 700px;
+    width: 650px;
     margin-top: 20px;
 }
 
 .content_result {
     flex: 1;
+    padding-left: 10px;
+    line-height: 33px;
 }
 
-.select_view_button {
-    width: 80px;
+.content_result > span {
+    font-weight: bold;
+}
+
+.select_view {
+    width: 70px;
 }
 
 .list_view_button, .card_view_button {
-    width: 40px;
-    height: 10px;
-    border: 0.5px solid gray;
+    width: 30px;
+    height: 30px;
+    opacity: 0.3;
+    cursor: pointer;
+}
+
+.selected {
+    opacity: 0.7;
 }
 
 .content_container {
     display: flex;
-    width: 700px;
-    height: 200px;
+    width: 650px;
+    height: 180px;
     margin: 15px 0px;
     padding: 20px;
     border-bottom: 0.5px solid gainsboro;
-    box-shadow: 3px 3px 3px 3px rgb(160, 160, 160);
+    box-shadow: 3px 3px 5px 3px rgba(0, 0, 0, 0.2);
 }
 
 .container_left {
     display: flex;
     align-items: center;
-    width: 120px;
+    width: 110px;
 }
 
 .container_left img {
-    width: 120px;
+    width: 110px;
     height: auto;
-    max-height: 180px;
-    box-shadow: 5px 5px 5px rgb(175, 175, 175);
+    max-height: 150px;
+    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
     cursor: pointer;
 }
 
@@ -152,33 +179,30 @@ header.scroll_bottom {
     display: flex;
     flex-direction: column;
     position: relative;
-    min-height: 160px;
-    padding: 5px;
-    padding-left: 15px;
+    min-height: 150px;
+    padding-left: 25px;
 }
 
 .content_title {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     font-size: 16px;
     font-weight: 300;
-    color: rgb(40, 40, 40);
 }
 
 .content_subtitle {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     font-size: 13px;
-    color: rgb(40, 40, 40);
 }
 
 .content_author {
     margin-bottom: 15px;
     font-size: 11px;
-    color: rgb(135, 135, 135);
+    color: rgba(0, 0, 0, 0.5);
 }
 
 .content_description {
     font-size: 11px;
-    color: rgb(78, 78, 78);
+    color: rgba(0, 0, 0, 0.7);
 }
 
 .content_url {
@@ -187,25 +211,25 @@ header.scroll_bottom {
 
 .content_price {
     position: absolute;
-    bottom: 10px;
+    bottom: 15px;
     margin-top: 15px;
     font-size: 12px;
     font-weight: 100;
-    color: gray;
+    color: rgba(0, 0, 0, 0.7);
 }
 
-.content_price span {
+.content_price > span {
     display: inline-block;
-    margin-right: 5px;
+    width: 30px;
 }
 
-.content_sales_price {
+.content_price .content_sales_price {
     width: 40px;
     text-decoration: line-through red;
 }
 
-.content_discount_price {
-    width: 45px;
+.content_price .content_discount_price {
+    width: 50px;
     font-weight: 700;
     color: #208ce4;
 }
@@ -216,12 +240,11 @@ header.scroll_bottom {
 }
 
 #get_more_button {
-    width: 600px;
+    width: 550px;
     padding: 5px;
     border: 0.5px solid gray;
     border-radius: 15px;
     font-size: 12px;
-    color: rgb(44, 44, 44);
     cursor: pointer;
     transition: all 0.3s;
     transition-property: font-weight, color, background-color;
@@ -233,19 +256,19 @@ header.scroll_bottom {
     background-color: #f8ed62;
 }
 
-#to_upward {
+.to_upward {
     position: fixed;
     right: 50px;
     top: calc(50% - 25px);
     cursor: pointer;
 }
 
-#to_upward > img {
+.to_upward > img {
     width: 50px;
     opacity: 0.2;
 }
 
-#to_upward > img:hover {
+.to_upward > img:hover {
     opacity: 0.7;
 }
 
@@ -262,5 +285,23 @@ footer {
     border-top: 0.5px solid rgb(160, 160, 160);
     background-color: rgb(230, 230, 230);
     font-size: 12px;
-    color: rgb(78, 78, 78);
+}
+
+.loader {
+    position: fixed;
+    bottom: 150px;
+    left: calc(50% - 40px);
+    width: 120px;
+    animation: loader 2s infinite;
+}
+
+@keyframes loader {
+    from {
+        opacity: 0;
+        transform: translateY(px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(-100px);
+    }
 }

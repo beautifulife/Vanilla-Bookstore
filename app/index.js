@@ -8,15 +8,11 @@ import 'styles/index.less';
 // Importing component templates
 import appTemplate from 'app.ejs';
 import contentsTemplate from 'contents.ejs';
-import contentContainerTemplate from 'contentContainer.ejs';
+import firstPageTemplate from 'first_page.ejs';
+import loaderTemplate from 'loader.ejs'
 
 // Import Gorilla Module
 import Gorilla from '../Gorilla';
-
-let $nowSearch = 1;
-let $beforeScroll = 0;
-let $count = 0;
-const $bookData = [];
 
 const app = new Gorilla.Component(appTemplate, {
   title: 'VAmazon',
@@ -24,84 +20,99 @@ const app = new Gorilla.Component(appTemplate, {
   searchboxPlaceholder: 'subject, author, publisher',
   contact: 'beautifulife.github.io',
 }, {
-  contents: new Gorilla.Component(contentContainerTemplate),
+  contents: new Gorilla.Component(firstPageTemplate),
 });
+
+const loader = new Gorilla.Component(loaderTemplate);
 
 window.addEventListener('scroll', controlByScroll);
 
-app.reloadClick = function (ev) {
+app.reloadClick = function(ev) {
   location.reload();
 }
 
-app.handleKeypress = function (ev) {
+app.handleKeypress = function(ev) {
   if (ev.currentTarget.value && ev.code === 'Enter') {
-    // removeBeforeSearch();
-    ev.currentTarget.disabled = true;
+    removeBeforeSearch();
     getDataFromApi(ev.currentTarget.value, 1);
-    $nowSearch = 21;
+    ev.currentTarget.value = null;
   }
 
-  // function removeBeforeSearch() {
-  //   if ($mainContent.children[0].children.length) {
-  //     const div = document.createElement('div');
-
-  //     $mainContent.children[0].remove();
-  //     div.id = 'root';
-  //     $mainContent.appendChild(div);
-  //   }
-  // }
+  function removeBeforeSearch() {
+    $bookData.length = 0;
+  }
 };
 
-app.handleSearchClick = function (ev) {
+app.handleSearchClick = function(ev) {
   if (ev.currentTarget.previousElementSibling.value) {
-    getDataFromApi(ev.currentTarget.previousElementSibling.value, $nowSearch);
-    $nowSearch += 20;
+    getDataFromApi(ev.currentTarget.previousElementSibling.value, 1);
   }
 };
 
-app.handleUpwardClick = function (ev) {
+app.handleUpwardClick = function(ev) {
   ev.currentTarget.parentNode.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
 };
 
-// Listening to component life cycle
-app.on('BEFORE_RENDER', () => console.log('app before render'));
-app.on('AFTER_RENDER', () => console.log('app after render'));
+app.getMoreClick = function(ev) {
+  getDataFromApi($keywordStorage, $nowSearch);
+};
 
-//   contentContainer.on('BEFORE_RENDER', () => console.log('cont2 before render'));
-//   contentContainer.on('AFTER_RENDER', () => console.log('cont2 after render'));
-//   contents._view.children.contentContainer2 = contentContainer2;
-//   contents.render();
-
-// Initializing the app into DOM
 Gorilla.renderToDOM(
   app,
   document.querySelector('#root'),
 );
 
-const $header = document.getElementsByTagName('header')[0];
-const $toUpwardButton = document.getElementById('to_upward');
+app.on('BEFORE_RENDER', () => {
+  Gorilla.renderToDOM(
+    loader,
+    document.querySelector('#root'),
+  );
+});
+app.on('AFTER_RENDER', () => {
+  setTimeout(() => {
+    if (loader._element) {
+      loader.destroy();
+    }
+  }, 1000);
+});
+
+const $mainContent = document.getElementById('main_content');
+const $getMoreButton = document.getElementById('get_more_button');
+const $searchBox = document.getElementById('search_box');
+const $bookData = [];
+let $nowSearch = 1;
+let $beforeScroll = 0;
+let $count = 0;
+let $componentStorage;
+let $keywordStorage;
+
+$getMoreButton.classList.add('hidden');
 
 function controlByScroll(ev) {
+  const toUpwardButton = document.getElementsByClassName('to_upward')[0];
+  const header = document.getElementsByTagName('header')[0];
   const yOffset = ev.currentTarget.pageYOffset;
 
   if (yOffset !== 0) {
-    $toUpwardButton.classList.remove('hidden');
+    toUpwardButton.classList.remove('hidden');
   } else {
-    $toUpwardButton.classList.add('hidden');
+    toUpwardButton.classList.add('hidden');
   }
 
   if (yOffset >= 300 && yOffset - $beforeScroll >= 0) {
-    $header.classList.add('scroll_bottom');
+    header.classList.add('scroll_bottom');
     $beforeScroll = yOffset;
   } else if (yOffset - $beforeScroll < 0) {
-    $header.classList.remove('scroll_bottom');
+    header.classList.remove('scroll_bottom');
     $beforeScroll = yOffset;
   }
 }
 
-//
-
 function getDataFromApi(inputText, startNum) {
+  $searchBox.disabled = true;
+  $nowSearch = startNum + 20;
+  $keywordStorage = inputText;
+
   const keyWord = encodeURI(inputText);
   const httpRequest = new XMLHttpRequest();
   const url = `http://localhost:3000/v1/search/book?query=${keyWord}&start=${startNum}&display=20&sort=count`;
@@ -112,7 +123,6 @@ function getDataFromApi(inputText, startNum) {
         const bookMasterData = JSON.parse(httpRequest.response);
 
         for (let i = 0; i < bookMasterData.items.length; i++) {
-          console.log('now i send data');
           compressUrl(bookMasterData.items[i]);
         }
       } else {
@@ -161,8 +171,11 @@ function cleansData(bookData) {
     bookData.title = bookData.title.substring(0, indexofBracket);
   }
 
+  bookData.description = bookData.description.replace(/\s\s+/g, '');
+  bookData.description = bookData.description.replace(/<(\/b|b)([^>]*)>/g, '');
+  
   if (bookData.description.length >= 50) {
-    bookData.description = bookData.description.substring(0, 50);
+    bookData.description = bookData.description.substring(0, 50) + '...';
   }
 
   if (!bookData.discount) {
@@ -193,14 +206,26 @@ function cleansData(bookData) {
 }
 
 function makeComponent(bookData) {
-  const contents = new Gorilla.Component(contentsTemplate, {
-    name: 'Baby.',
-    contentContainer: bookData,
-  });
+  if (!$componentStorage) {
+    $componentStorage = new Gorilla.Component(contentsTemplate, {
+      keyword: $keywordStorage,
+      contentData: bookData,
+    });
 
-  app._view.children.contents = contents;
+    app._view.children.contents = $componentStorage;
+    app.render();
+  }
 
-  app.render();
+  $componentStorage.keyword = $keywordStorage;
+  $componentStorage.contentData = bookData;
+
+  if ($getMoreButton.classList.contains('hidden')) {
+    $getMoreButton.classList.remove('hidden');
+  }
+
+  window.scroll({top: $beforeScroll});
+  debugger;
+  $searchBox.disabled = false;
 }
 
 /* DO NOT REMOVE */

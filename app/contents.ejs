@@ -1,17 +1,17 @@
 <div id="main_content">
   <div class="content_header">
-    <p class="content_result">검색결과</p>
+    <p class="content_result"><span>"<%= keyword %>"</span>&nbsp;&nbsp;검색결과</p>
     <div class="select_view">
-      <button class="list_view_button"></button>
-      <button class="card_view_button"></button>
+      <button ><img src="/assets/images/list_button.png" class="list_view_button selected"></button>
+      <button ><img src="/assets/images/card_button.png" class="card_view_button"></button>
     </div>
   </div>
   <div class="content_area">
-    <% contentContainer.forEach(function(item){ %>
+    <% contentData.forEach(function(item){ %>
       <div class="content_container">
         <div class="container_left">
           <a href="<%= item.link %>">
-            <img src="<%= item.image %>">
+            <img src="<%= item.image %>" onerror="event.currentTarget.src='/assets/images/replace_img.jpg'">
           </a>
         </div>
         <div class="container_right">
@@ -22,8 +22,8 @@
             <p class="content_description"><%= item.description %></p>
             <p class="content_price">
               <span>구매</span>
-              <span class="content_sales_price"><%= item.price %></span>
               <span class="content_discount_price"><%= item.discount %></span>
+              <span class="content_sales_price"><%= item.price %></span>
             </p>
           </div>
         </div>
