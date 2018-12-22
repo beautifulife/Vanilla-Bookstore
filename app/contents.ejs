@@ -1,33 +1,80 @@
-<div id="main_content">
-  <div class="content_header">
-    <p class="content_result"><span>"<%= keyword %>"</span>&nbsp;&nbsp;검색결과</p>
-    <div class="select_view">
-      <button ><img src="/assets/images/list_button.png" class="list_view_button selected"></button>
-      <button ><img src="/assets/images/card_button.png" class="card_view_button"></button>
-    </div>
-  </div>
-  <div class="content_area">
-    <% contentData.forEach(function(item){ %>
-      <div class="content_container">
-        <div class="container_left">
-          <a href="<%= item.link %>">
-            <img src="<%= item.image %>" onerror="event.currentTarget.src='/assets/images/replace_img.jpg'">
-          </a>
-        </div>
-        <div class="container_right">
-          <h1 class="content_title"><%= item.title %></h1>
-          <p class="content_subtitle"><%= item.subTitle %></p>
-          <div class="content_main">
-            <p class="content_author"><%= item.author %> | <%= item.publisher %> | <%= item.pubdate %> | <a href="<%= item.link %>" class="content_url"><%= item.link %></a></p>
-            <p class="content_description"><%= item.description %></p>
-            <p class="content_price">
-              <span>구매</span>
-              <span class="content_discount_price"><%= item.discount %></span>
-              <span class="content_sales_price"><%= item.price %></span>
-            </p>
-          </div>
-        </div>
+<div class="content-container">
+  <% if (viewType === 'list') { %>
+    <div class="content-header">
+      <p class="content-header-result"><span>"<%= keyword %>"</span>&nbsp;&nbsp;검색결과</p>
+      <div class="select-view-wrapper">
+        <button ><img class="btn-list-view selected" src="/assets/images/btn_list_type.png" gorilla-click="selectView"></button>
+        <button ><img class="btn-card-view" src="/assets/images/btn_card_type.png" gorilla-click="selectView"></button>
       </div>
-    <% }); %>
-  </div>
+    </div>
+    <div class="list-content-area">
+      <% if (contentData.length) { %>
+        <% contentData.forEach(function(item) { %>
+          <div class="list-content-container">
+            <div class="list-left-box">
+              <a href="<%= item.link %>">
+                <img src="<%= item.image %>" onerror="event.currentTarget.src='/assets/images/replace_img.jpg'">
+              </a>
+            </div>
+            <div class="list-right-box">
+              <a href="<%= item.link %>">
+                <h1 class="list-content-title"><%= item.title %></h1>
+              </a>
+              <p class="list-content-subtitle"><%= item.subTitle %></p>
+              <div class="list-content-wrapper">
+                <p class="list-content-author"><%= item.author %> | <%= item.publisher %> | <%= item.pubdate %> | <a class="list-content-url" href="<%= item.link %>"><%= item.link %></a></p>
+                <p class="list-content-description"><%= item.description %></p>
+                <p class="list-content-price-wrapper">
+                  <span>구매</span>
+                  <span class="list-content-discount"><%= item.discount %></span>
+                  <span class="list-content-price"><%= item.price %></span>
+                </p>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <div class="no-content-container">
+          검색결과가 없습니다.
+        </div>
+      <% } %>
+    </div>
+  <% } else { %>
+    <div class="content-header">
+      <p class="content-header-result"><span>"<%= keyword %>"</span>&nbsp;&nbsp;검색결과</p>      
+      <div class="select-view-wrapper">
+        <button ><img class="btn-list-view" src="/assets/images/btn_list_type.png" gorilla-click="selectView"></button>
+        <button ><img class="btn-card-view selected" src="/assets/images/btn_card_type.png" gorilla-click="selectView"></button>
+      </div>
+    </div>
+    <div class="card-content-area">
+      <% if (contentData.length) { %>
+        <% contentData.forEach(function(item){ %>
+          <div class="card-content-container">
+            <div class="card-top-box">
+              <a href="<%= item.link %>">
+                <img src="<%= item.image %>" onerror="event.currentTarget.src='/assets/images/replace_img.jpg'" gorilla-mouseover="hoverImageIn">
+                <p class="card-content-description hidden" gorilla-mouseout="hoverImageOut"><%= item.description %></p>
+              </a>
+            </div>
+            <div class="card-bottom-box">
+              <h1 class="card-content-title"><%= item.title %></h1>
+              <div class="card-content-wrapper">
+                <p class="card-content-author"><%= item.author %></p>
+                <p class="card-content-author"><%= item.pubdate %></p>
+                <p class="card-content-price-wrapper">
+                  <span>구매</span>
+                  <span class="card-content-discount"><%= item.discount %></span>
+                </p>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <div class="no-content-container">
+            검색결과가 없습니다.
+        </div>
+      <% } %>
+    </div>
+  <% } %>
 </div>

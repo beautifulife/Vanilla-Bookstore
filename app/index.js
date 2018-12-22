@@ -17,7 +17,7 @@ import Gorilla from '../Gorilla';
 const app = new Gorilla.Component(appTemplate, {
   title: 'VAmazon',
   subTitle: 'The bookstore by Vanilla_Coding',
-  searchboxPlaceholder: 'subject, author, publisher',
+  inputBoxPlaceholder: 'subject, author, publisher',
   contact: 'beautifulife.github.io',
 }, {
   contents: new Gorilla.Component(firstPageTemplate),
@@ -27,11 +27,11 @@ const loader = new Gorilla.Component(loaderTemplate);
 
 window.addEventListener('scroll', controlByScroll);
 
-app.reloadClick = function(ev) {
+app.handleReloadClick = function(ev) {
   location.reload();
-}
+};
 
-app.handleKeypress = function(ev) {
+app.handleInputKeypress = function(ev) {
   if (ev.currentTarget.value && ev.code === 'Enter') {
     removeBeforeSearch();
     getDataFromApi(ev.currentTarget.value, 1);
@@ -53,43 +53,28 @@ app.handleUpwardClick = function(ev) {
   ev.currentTarget.parentNode.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
 };
 
-app.getMoreClick = function(ev) {
-  getDataFromApi($keywordStorage, $nowSearch);
-};
-
 Gorilla.renderToDOM(
   app,
   document.querySelector('#root'),
 );
 
 app.on('BEFORE_RENDER', () => {
-  Gorilla.renderToDOM(
-    loader,
-    document.querySelector('#root'),
-  );
 });
 app.on('AFTER_RENDER', () => {
-  setTimeout(() => {
-    if (loader._element) {
-      loader.destroy();
-    }
-  }, 1000);
 });
 
-const $mainContent = document.getElementById('main_content');
-const $getMoreButton = document.getElementById('get_more_button');
-const $searchBox = document.getElementById('search_box');
+const $inputBox = document.getElementsByClassName('gnb-input-box')[0];
 const $bookData = [];
 let $nowSearch = 1;
 let $beforeScroll = 0;
 let $count = 0;
 let $componentStorage;
 let $keywordStorage;
-
-$getMoreButton.classList.add('hidden');
+let $viewType = 'list';
+let $isDone = true;
 
 function controlByScroll(ev) {
-  const toUpwardButton = document.getElementsByClassName('to_upward')[0];
+  const toUpwardButton = document.getElementsByClassName('btn-upward')[0];
   const header = document.getElementsByTagName('header')[0];
   const yOffset = ev.currentTarget.pageYOffset;
 
@@ -106,27 +91,44 @@ function controlByScroll(ev) {
     header.classList.remove('scroll_bottom');
     $beforeScroll = yOffset;
   }
+
+  if ((yOffset + 500) / document.body.offsetHeight >= 0.8 && $isDone) {
+    getDataFromApi($keywordStorage, $nowSearch);
+  }
 }
 
 function getDataFromApi(inputText, startNum) {
-  $searchBox.disabled = true;
-  $nowSearch = startNum + 20;
-  $keywordStorage = inputText;
-
   const keyWord = encodeURI(inputText);
   const httpRequest = new XMLHttpRequest();
   const url = `http://localhost:3000/v1/search/book?query=${keyWord}&start=${startNum}&display=20&sort=count`;
+
+  Gorilla.renderToDOM(
+    loader,
+    document.querySelector('#root'),
+  );
+
+  $isDone = false;
+  $inputBox.disabled = true;
+  $nowSearch = startNum + 20;
+  $keywordStorage = inputText;
 
   httpRequest.onreadystatechange = function() {
     if (httpRequest.readyState === httpRequest.DONE) {
       if (httpRequest.status === 200) {
         const bookMasterData = JSON.parse(httpRequest.response);
 
-        for (let i = 0; i < bookMasterData.items.length; i++) {
-          compressUrl(bookMasterData.items[i]);
+        if (bookMasterData.items.length) {
+          for (let i = 0; i < bookMasterData.items.length; i++) {
+            compressUrl(bookMasterData.items[i]);
+          }
+        } else {
+          makeComponent([]);
+          $bookData.length = 0;
         }
       } else {
-        console.log(httpRequest.response);
+        $inputBox.disabled = false;
+        loader.destroy();
+        console.log('정보를 가져올 수 없습니다.');
       }
     }
   };
@@ -171,7 +173,7 @@ function cleansData(bookData) {
     bookData.title = bookData.title.substring(0, indexofBracket);
   }
 
-  bookData.description = bookData.description.replace(/\s\s+/g, '');
+  bookData.description = bookData.description.replace(/\s\s+/g, ' ');
   bookData.description = bookData.description.replace(/<(\/b|b)([^>]*)>/g, '');
   
   if (bookData.description.length >= 50) {
@@ -208,24 +210,49 @@ function cleansData(bookData) {
 function makeComponent(bookData) {
   if (!$componentStorage) {
     $componentStorage = new Gorilla.Component(contentsTemplate, {
+      viewType: $viewType,
       keyword: $keywordStorage,
       contentData: bookData,
     });
 
+    $componentStorage.selectView = function(ev) {
+      let viewType;
+
+      if (ev.currentTarget.classList.contains('btn-list-view')) {
+        viewType = 'list';
+      } else {
+        viewType = 'card';
+      }
+
+      if (viewType !== $viewType) {
+        $viewType = viewType;
+        $componentStorage = null;
+        makeComponent($bookData);
+      }
+    };
+
+    $componentStorage.hoverImageIn = function(ev) {
+      ev.currentTarget.nextElementSibling.classList.remove('hidden');
+    };
+
+    $componentStorage.hoverImageOut = function(ev) {
+      ev.currentTarget.classList.add('hidden');
+    };
+
     app._view.children.contents = $componentStorage;
     app.render();
-  }
-
-  $componentStorage.keyword = $keywordStorage;
-  $componentStorage.contentData = bookData;
-
-  if ($getMoreButton.classList.contains('hidden')) {
-    $getMoreButton.classList.remove('hidden');
+  } else {
+    $componentStorage.keyword = $keywordStorage;
+    $componentStorage.contentData = bookData;
   }
 
   window.scroll({top: $beforeScroll});
-  debugger;
-  $searchBox.disabled = false;
+  $inputBox.disabled = false;
+  $isDone = true;
+
+  if (loader._element) {
+    loader.destroy();
+  }
 }
 
 /* DO NOT REMOVE */
