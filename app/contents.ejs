@@ -1,11 +1,19 @@
 <div class="content-container">
   <% if (viewType === 'list') { %>
     <div class="content-header">
-      <p class="content-header-result"><span>"<%= keyword %>"</span>&nbsp;&nbsp;검색결과</p>
-      <div class="select-view-wrapper">
-        <button ><img class="btn-list-view selected" src="/assets/images/btn_list_type.png" gorilla-click="selectView"></button>
-        <button ><img class="btn-card-view" src="/assets/images/btn_card_type.png" gorilla-click="selectView"></button>
+      <p class="content-header-result">
+        <span><%= totalCount %></span>&nbsp;&nbsp;results for&nbsp;
+        <span>"<%= keyword %>"</span>
+      </p>
+      <div class="select-view-wrapper" gorilla-click="selectView">
+        <button ><img class="btn-list-view selected" src="/assets/images/btn_list_type.png" data-view="list"></button>
+        <button ><img class="btn-card-view" src="/assets/images/btn_card_type.png" data-view="card"></button>
       </div>
+    </div>
+    <div class="select-sort-wrapper" gorilla-click="selectSort">
+        <button class="btn-sort-similar <% if (sortType === 'sim') { %>selected<% } %>" data-sort="sim">Search Similarity</button><span class="space-between">|</span>
+      <button class="btn-sort-new <% if (sortType === 'date') { %>selected<% } %>" data-sort="date">Newest Arrivals</button><span class="space-between">|</span>
+      <button class="btn-sort-count <% if (sortType === 'count') { %>selected<% } %>" data-sort="count">Featured</button>
     </div>
     <div class="list-content-area">
       <% if (contentData.length) { %>
@@ -26,7 +34,7 @@
                 <p class="list-content-description"><%= item.description %></p>
                 <p class="list-content-price-wrapper">
                   <span>구매</span>
-                  <span class="list-content-discount"><%= item.discount %></span>
+                  <a href="<%= item.link %>"><span class="list-content-discount"><%= item.discount %></span></a>
                   <span class="list-content-price"><%= item.price %></span>
                 </p>
               </div>
@@ -41,11 +49,19 @@
     </div>
   <% } else { %>
     <div class="content-header">
-      <p class="content-header-result"><span>"<%= keyword %>"</span>&nbsp;&nbsp;검색결과</p>      
-      <div class="select-view-wrapper">
-        <button ><img class="btn-list-view" src="/assets/images/btn_list_type.png" gorilla-click="selectView"></button>
-        <button ><img class="btn-card-view selected" src="/assets/images/btn_card_type.png" gorilla-click="selectView"></button>
+      <p class="content-header-result">
+        <span><%= totalCount %></span>&nbsp;&nbsp;results for&nbsp;
+        <span>"<%= keyword %>"</span>
+      </p>
+      <div class="select-view-wrapper" gorilla-click="selectView">
+        <button ><img class="btn-list-view" src="/assets/images/btn_list_type.png" data-view="list"></button>
+        <button ><img class="btn-card-view selected" src="/assets/images/btn_card_type.png" data-view="card"></button>
       </div>
+    </div>
+    <div class="select-sort-wrapper" gorilla-click="selectSort">
+      <button class="btn-sort-similar <% if (sortType === 'sim') { %>selected<% } %>" data-sort="sim">Search Similarity</button><span class="space-between">|</span>
+      <button class="btn-sort-new <% if (sortType === 'date') { %>selected<% } %>" data-sort="date">Newest Arrivals</button><span class="space-between">|</span>
+      <button class="btn-sort-count <% if (sortType === 'count') { %>selected<% } %>" data-sort="count">Featured</button>
     </div>
     <div class="card-content-area">
       <% if (contentData.length) { %>
@@ -64,7 +80,7 @@
                 <p class="card-content-author"><%= item.pubdate %></p>
                 <p class="card-content-price-wrapper">
                   <span>구매</span>
-                  <span class="card-content-discount"><%= item.discount %></span>
+                  <a href="<%= item.link %>"><span class="card-content-discount"><%= item.discount %></span></a>
                 </p>
               </div>
             </div>

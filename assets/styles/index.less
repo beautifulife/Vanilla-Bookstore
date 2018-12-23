@@ -2,7 +2,7 @@
 // but allowing components to change
 // http://www.paulirish.com/2012/box-sizing-border-box-ftw/
 html, body {
-    min-width: 600px;
+    min-width: 700px;
     margin: 0;
     box-sizing: border-box;
     font-family: 'lato', 'Nanum Gothic', sans-serif;
@@ -32,7 +32,7 @@ header {
     align-items: center;
     z-index: 1;
     width: 100%;
-    min-width: 600px;
+    min-width: 700px;
     height: 70px;
     border-bottom: 0.5px solid rgba(0, 0, 0, 0.2);
     background-color: rgb(255, 246, 126);
@@ -71,17 +71,22 @@ header.scroll_bottom {
 }
 
 .gnb-search-bar {
-    padding-right: 15px;
+    padding-right: 20px;
 }
 
 .gnb-input-box {
-    width: 150px;
+    width: 200px;
     height: 15px;
-    padding: 5px;
-    padding-left: 10px;
+    padding: 5px 10px;
     border: 0.5px solid rgba(0, 0, 0, 0.3);
     border-radius: 10px;
     font-size: 12px;
+    text-align: center;
+}
+
+.gnb-input-box::placeholder {
+    text-align: center;
+    font-weight: 100;
 }
 
 .gnb-input-box:focus, .gnb-input-box:hover, .gnb-btn-search:hover{
@@ -144,18 +149,39 @@ header.scroll_bottom {
     cursor: pointer;
 }
 
-.selected {
+.select-sort-wrapper {
+    width: 650px;
+    padding: 15px 5px 0px 10px;
+    font-size: 14px;
+}
+
+.select-sort-wrapper > button {
+    border-radius: 10px;
+    cursor: pointer;
     opacity: 0.7;
+}
+
+.space-between {
+    font-size: 11px;
+    margin: 0px 5px;
+    color: rgba(0, 0, 0, 0.5);
+}
+
+.selected {
+    color: black;
+    font-weight: bold;
+    opacity: 0.8;
 }
 
 .list-content-area {
     width: 650px;
+    margin-top: 10px;
 }
 
 .list-content-container {
     display: flex;
     width: 650px;
-    height: 180px;
+    min-height: 180px;
     margin: 15px 0px;
     padding: 20px;
     border-bottom: 0.5px solid gainsboro;
@@ -204,6 +230,7 @@ header.scroll_bottom {
 }
 
 .list-content-description {
+    margin-bottom: 35px;
     font-size: 11px;
     color: rgba(0, 0, 0, 0.7);
 }
@@ -214,8 +241,7 @@ header.scroll_bottom {
 
 .list-content-price-wrapper {
     position: absolute;
-    bottom: 15px;
-    margin-top: 15px;
+    bottom: 10px;
     font-size: 12px;
     font-weight: 100;
     color: rgba(0, 0, 0, 0.7);
@@ -228,35 +254,36 @@ header.scroll_bottom {
 }
 
 span.list-content-price {
-    margin-left: 15px;
+    margin-left: 10px;
     text-decoration: line-through red;
 }
 
 span.list-content-discount, span.card-content-discount {
+    font-size: 11px;
     font-weight: 700;
     color: #208ce4;
+    cursor:pointer;
 }
 
 .card-content-area {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
     width: 680px;
+    margin-top: 10px;
 }
 
 .card-content-container {
-    display: flex;
+    display: inline-flex;
     flex-direction: column;
     width: 160px;
     height: 350px;
+    margin: 0px 3px;
     padding: 5px;
 }
 
 .card-top-box {
     display: flex;
+    position: relative;
     align-items: flex-end;
     justify-content: center;
-    position: relative;
     height: 180px;
 }
 
@@ -264,15 +291,16 @@ span.list-content-discount, span.card-content-discount {
     position: absolute;
     left: 5px;
     bottom: 0;
-    height: 155px;
     width: 120px;
+    height: 155px;
     padding: 10px;
     font-size: 13px;
     font-weight: 100;
+    border-radius: 10px;
     background-color: black;
     color: white;
     opacity: 0.8;
-    line-height: 25px;
+    line-height: 30px;
     cursor:pointer;
 }
 
@@ -308,8 +336,8 @@ span.list-content-discount, span.card-content-discount {
 
 .btn-upward {
     position: fixed;
-    right: 50px;
     top: calc(50% - 25px);
+    right: 50px;
     cursor: pointer;
 }
 
@@ -332,8 +360,6 @@ footer {
     align-items: center;
     width: 100%;
     height: 30px;
-    // border-top: 0.5px solid rgb(160, 160, 160);
-    // background-color: rgb(230, 230, 230);
     font-size: 12px;
 }
 
@@ -342,7 +368,7 @@ footer {
     bottom: 150px;
     left: calc(50% - 40px);
     width: 120px;
-    animation: loader 2s infinite;
+    animation: loader 1.5s infinite;
 }
 
 @keyframes loader {

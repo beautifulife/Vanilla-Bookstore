@@ -9,7 +9,7 @@ import 'styles/index.less';
 import appTemplate from 'app.ejs';
 import contentsTemplate from 'contents.ejs';
 import firstPageTemplate from 'first_page.ejs';
-import loaderTemplate from 'loader.ejs'
+import loaderTemplate from 'loader.ejs';
 
 // Import Gorilla Module
 import Gorilla from '../Gorilla';
@@ -33,13 +33,23 @@ app.handleReloadClick = function(ev) {
 
 app.handleInputKeypress = function(ev) {
   if (ev.currentTarget.value && ev.code === 'Enter') {
+    if (ev.currentTarget.value.length > 20) {
+      ev.currentTarget.value = ev.currentTarget.value.substring(0,20);
+
+      return alert('Up to 20 characters possible');
+    }
+
     removeBeforeSearch();
     getDataFromApi(ev.currentTarget.value, 1);
     ev.currentTarget.value = null;
+  } else {
+    if (ev.currentTarget.value.length >= 20) {
+      ev.returnValue = false;
+    }
   }
 
   function removeBeforeSearch() {
-    $bookData.length = 0;
+    $bookData = {};
   }
 };
 
@@ -58,20 +68,37 @@ Gorilla.renderToDOM(
   document.querySelector('#root'),
 );
 
-app.on('BEFORE_RENDER', () => {
-});
-app.on('AFTER_RENDER', () => {
-});
-
 const $inputBox = document.getElementsByClassName('gnb-input-box')[0];
-const $bookData = [];
+let $bookData = {};
 let $nowSearch = 1;
 let $beforeScroll = 0;
-let $count = 0;
+let $displaySearchCount = 0;
 let $componentStorage;
 let $keywordStorage;
 let $viewType = 'list';
+let $sortType = 'sim';
 let $isDone = true;
+let $totalSearchCount = 0;
+const $errorLog = [];
+
+const $bookDataStorage = (function() {
+  let _bookData = {};
+  const method = {};
+
+  method.getData = function() {
+    return _bookData;
+  };
+
+  method.storeData = function(key, value) {
+    _bookData[key] = value;
+  };
+
+  method.resetData = function() {
+    _bookData = {};
+  };
+
+  return method;
+}());
 
 function controlByScroll(ev) {
   const toUpwardButton = document.getElementsByClassName('btn-upward')[0];
@@ -92,24 +119,19 @@ function controlByScroll(ev) {
     $beforeScroll = yOffset;
   }
 
-  if ((yOffset + 500) / document.body.offsetHeight >= 0.8 && $isDone) {
-    getDataFromApi($keywordStorage, $nowSearch);
+  if ((yOffset + 500) / document.body.offsetHeight >= 0.85 && $isDone) {
+    getDataFromApi($keywordStorage, $nowSearch, $sortType);
   }
 }
 
-function getDataFromApi(inputText, startNum) {
-  const keyWord = encodeURI(inputText);
+function getDataFromApi(inputText, startNum, option) {
+  const sortOption = option || 'sim';
+  const keyword = encodeURI(inputText);
   const httpRequest = new XMLHttpRequest();
-  const url = `http://localhost:3000/v1/search/book?query=${keyWord}&start=${startNum}&display=20&sort=count`;
-
-  Gorilla.renderToDOM(
-    loader,
-    document.querySelector('#root'),
-  );
+  const url = `http://localhost:3000/v1/search/book?query=${keyword}&start=${startNum}&display=20&sort=${sortOption}`;
 
   $isDone = false;
   $inputBox.disabled = true;
-  $nowSearch = startNum + 20;
   $keywordStorage = inputText;
 
   httpRequest.onreadystatechange = function() {
@@ -118,26 +140,41 @@ function getDataFromApi(inputText, startNum) {
         const bookMasterData = JSON.parse(httpRequest.response);
 
         if (bookMasterData.items.length) {
+          $totalSearchCount = bookMasterData.total;
+          $displaySearchCount = bookMasterData.display;
+
           for (let i = 0; i < bookMasterData.items.length; i++) {
-            compressUrl(bookMasterData.items[i]);
+            compressUrl(bookMasterData.items[i], i, $nowSearch);
           }
-        } else {
+
+          $nowSearch = startNum + bookMasterData.display;
+        } else if (!Object.keys($bookData).length) {
+          $bookData = {};
+          $totalSearchCount = 0;
           makeComponent([]);
-          $bookData.length = 0;
+        } else {
+          loader.destroy();
         }
       } else {
         $inputBox.disabled = false;
         loader.destroy();
-        console.log('정보를 가져올 수 없습니다.');
+        $errorLog.push({[keyword]: httpRequest.status});
+
+        return alert('Please try again later.');
       }
     }
   };
 
   httpRequest.open('GET', url);
   httpRequest.send();
+
+  Gorilla.renderToDOM(
+    loader,
+    document.querySelector('#root'),
+  );
 }
 
-function compressUrl(bookData) {
+function compressUrl(bookData, iterationIndex, startIndex) {
   const httpRequest = new XMLHttpRequest();
   const url = 'http://localhost:3000/v1/util/shorturl?url=' + bookData.link;
 
@@ -147,16 +184,15 @@ function compressUrl(bookData) {
         const responsedUrl = JSON.parse(httpRequest.response);
 
         bookData.link = responsedUrl.result.url;
-        $bookData.push(cleansData(bookData));
+        $bookData[startIndex + iterationIndex - 1] = cleansData(bookData);
 
-        $count++;
+        $displaySearchCount--;
 
-        if ($count === 20) {
+        if ($displaySearchCount === 0) {
           makeComponent($bookData);
-          $count = 0;
         }
       } else {
-        console.log(httpRequest.response);
+        $errorLog.push({[bookData]: httpRequest.status});
       }
     }
   };
@@ -175,7 +211,8 @@ function cleansData(bookData) {
 
   bookData.description = bookData.description.replace(/\s\s+/g, ' ');
   bookData.description = bookData.description.replace(/<(\/b|b)([^>]*)>/g, '');
-  
+  bookData.description = bookData.description.replace(/^\&\w*;|\w*;/g, '');
+
   if (bookData.description.length >= 50) {
     bookData.description = bookData.description.substring(0, 50) + '...';
   }
@@ -211,23 +248,30 @@ function makeComponent(bookData) {
   if (!$componentStorage) {
     $componentStorage = new Gorilla.Component(contentsTemplate, {
       viewType: $viewType,
+      sortType: $sortType,
       keyword: $keywordStorage,
-      contentData: bookData,
+      totalCount: $totalSearchCount,
+      contentData: Object.values(bookData),
     });
 
     $componentStorage.selectView = function(ev) {
-      let viewType;
-
-      if (ev.currentTarget.classList.contains('btn-list-view')) {
-        viewType = 'list';
-      } else {
-        viewType = 'card';
-      }
+      const viewType = ev.target.dataset.view;
 
       if (viewType !== $viewType) {
         $viewType = viewType;
         $componentStorage = null;
         makeComponent($bookData);
+      }
+    };
+
+    $componentStorage.selectSort = function(ev) {
+      const sortType = ev.target.dataset.sort;
+
+      if (sortType !== $sortType) {
+        $sortType = sortType;
+        $componentStorage = null;
+        $bookData = {};
+        getDataFromApi($keywordStorage, 1, sortType);
       }
     };
 
@@ -242,8 +286,9 @@ function makeComponent(bookData) {
     app._view.children.contents = $componentStorage;
     app.render();
   } else {
+    $componentStorage.totalCount = $totalSearchCount;
     $componentStorage.keyword = $keywordStorage;
-    $componentStorage.contentData = bookData;
+    $componentStorage.contentData = Object.values(bookData);
   }
 
   window.scroll({top: $beforeScroll});
