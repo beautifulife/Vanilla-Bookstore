@@ -25,8 +25,6 @@ const app = new Gorilla.Component(appTemplate, {
 
 const loader = new Gorilla.Component(loaderTemplate);
 
-window.addEventListener('scroll', controlByScroll);
-
 app.handleReloadClick = function(ev) {
   location.reload();
 };
@@ -39,17 +37,13 @@ app.handleInputKeypress = function(ev) {
       return alert('Up to 20 characters possible');
     }
 
-    removeBeforeSearch();
+    $bookData.resetData();
     getDataFromApi(ev.currentTarget.value, 1);
     ev.currentTarget.value = null;
   } else {
     if (ev.currentTarget.value.length >= 20) {
       ev.returnValue = false;
     }
-  }
-
-  function removeBeforeSearch() {
-    $bookData = {};
   }
 };
 
@@ -69,36 +63,35 @@ Gorilla.renderToDOM(
 );
 
 const $inputBox = document.getElementsByClassName('gnb-input-box')[0];
-let $bookData = {};
-let $nowSearch = 1;
-let $beforeScroll = 0;
+const $bookData = new CreateBookData();
+const $errorLog = [];
+let $startNumber = 1;
+let $beforeYOffset = 0;
 let $displaySearchCount = 0;
-let $componentStorage;
-let $keywordStorage;
+let $contentComponent;
+let $keyword;
 let $viewType = 'list';
 let $sortType = 'sim';
 let $isDone = true;
 let $totalSearchCount = 0;
-const $errorLog = [];
 
-const $bookDataStorage = (function() {
+window.addEventListener('scroll', controlByScroll);
+
+function CreateBookData() {
   let _bookData = {};
-  const method = {};
 
-  method.getData = function() {
+  CreateBookData.prototype.getData = function() {
     return _bookData;
   };
 
-  method.storeData = function(key, value) {
+  CreateBookData.prototype.storeData = function(key, value) {
     _bookData[key] = value;
   };
 
-  method.resetData = function() {
+  CreateBookData.prototype.resetData = function() {
     _bookData = {};
   };
-
-  return method;
-}());
+}
 
 function controlByScroll(ev) {
   const toUpwardButton = document.getElementsByClassName('btn-upward')[0];
@@ -111,28 +104,29 @@ function controlByScroll(ev) {
     toUpwardButton.classList.add('hidden');
   }
 
-  if (yOffset >= 300 && yOffset - $beforeScroll >= 0) {
+  if (yOffset >= 300 && yOffset - $beforeYOffset >= 0) {
     header.classList.add('scroll_bottom');
-    $beforeScroll = yOffset;
-  } else if (yOffset - $beforeScroll < 0) {
+    $beforeYOffset = yOffset;
+  } else if (yOffset - $beforeYOffset < 0) {
     header.classList.remove('scroll_bottom');
-    $beforeScroll = yOffset;
+    $beforeYOffset = yOffset;
   }
 
   if ((yOffset + 500) / document.body.offsetHeight >= 0.85 && $isDone) {
-    getDataFromApi($keywordStorage, $nowSearch, $sortType);
+    debugger;
+    getDataFromApi($keyword, $startNumber, $sortType);
   }
 }
 
-function getDataFromApi(inputText, startNum, option) {
+function getDataFromApi(inputText, startNumber, option) {
   const sortOption = option || 'sim';
   const keyword = encodeURI(inputText);
   const httpRequest = new XMLHttpRequest();
-  const url = `http://localhost:3000/v1/search/book?query=${keyword}&start=${startNum}&display=20&sort=${sortOption}`;
+  const url = `http://localhost:3000/v1/search/book?query=${keyword}&start=${startNumber}&display=20&sort=${sortOption}`;
 
   $isDone = false;
   $inputBox.disabled = true;
-  $keywordStorage = inputText;
+  $keyword = inputText;
 
   httpRequest.onreadystatechange = function() {
     if (httpRequest.readyState === httpRequest.DONE) {
@@ -144,12 +138,12 @@ function getDataFromApi(inputText, startNum, option) {
           $displaySearchCount = bookMasterData.display;
 
           for (let i = 0; i < bookMasterData.items.length; i++) {
-            compressUrl(bookMasterData.items[i], i, $nowSearch);
+            compressUrl(bookMasterData.items[i], i, $startNumber);
           }
 
-          $nowSearch = startNum + bookMasterData.display;
-        } else if (!Object.keys($bookData).length) {
-          $bookData = {};
+          $startNumber = startNumber + bookMasterData.display;
+        } else if (!Object.keys($bookData.getData()).length) {
+          $bookData.resetData();
           $totalSearchCount = 0;
           makeComponent([]);
         } else {
@@ -184,12 +178,12 @@ function compressUrl(bookData, iterationIndex, startIndex) {
         const responsedUrl = JSON.parse(httpRequest.response);
 
         bookData.link = responsedUrl.result.url;
-        $bookData[startIndex + iterationIndex - 1] = cleansData(bookData);
+        $bookData.storeData([startIndex + iterationIndex - 1], cleansData(bookData));
 
         $displaySearchCount--;
 
         if ($displaySearchCount === 0) {
-          makeComponent($bookData);
+          makeComponent($bookData.getData());
         }
       } else {
         $errorLog.push({[bookData]: httpRequest.status});
@@ -245,53 +239,54 @@ function cleansData(bookData) {
 }
 
 function makeComponent(bookData) {
-  if (!$componentStorage) {
-    $componentStorage = new Gorilla.Component(contentsTemplate, {
+  if (!$contentComponent) {
+    $contentComponent = new Gorilla.Component(contentsTemplate, {
       viewType: $viewType,
       sortType: $sortType,
-      keyword: $keywordStorage,
+      keyword: $keyword,
       totalCount: $totalSearchCount,
       contentData: Object.values(bookData),
     });
 
-    $componentStorage.selectView = function(ev) {
+    $contentComponent.selectView = function(ev) {
       const viewType = ev.target.dataset.view;
 
       if (viewType !== $viewType) {
         $viewType = viewType;
-        $componentStorage = null;
-        makeComponent($bookData);
+        $contentComponent = null;
+        makeComponent($bookData.getData());
       }
     };
 
-    $componentStorage.selectSort = function(ev) {
+    $contentComponent.selectSort = function(ev) {
       const sortType = ev.target.dataset.sort;
 
       if (sortType !== $sortType) {
         $sortType = sortType;
-        $componentStorage = null;
-        $bookData = {};
-        getDataFromApi($keywordStorage, 1, sortType);
+        $contentComponent = null;
+        $bookData.resetData();
+        $startNumber = 1;
+        getDataFromApi($keyword, 1, sortType);
       }
     };
 
-    $componentStorage.hoverImageIn = function(ev) {
+    $contentComponent.hoverImageIn = function(ev) {
       ev.currentTarget.nextElementSibling.classList.remove('hidden');
     };
 
-    $componentStorage.hoverImageOut = function(ev) {
+    $contentComponent.hoverImageOut = function(ev) {
       ev.currentTarget.classList.add('hidden');
     };
 
-    app._view.children.contents = $componentStorage;
+    app._view.children.contents = $contentComponent;
     app.render();
   } else {
-    $componentStorage.totalCount = $totalSearchCount;
-    $componentStorage.keyword = $keywordStorage;
-    $componentStorage.contentData = Object.values(bookData);
+    $contentComponent.totalCount = $totalSearchCount;
+    $contentComponent.keyword = $keyword;
+    $contentComponent.contentData = Object.values(bookData);
   }
 
-  window.scroll({top: $beforeScroll});
+  window.scroll({top: $beforeYOffset});
   $inputBox.disabled = false;
   $isDone = true;
 

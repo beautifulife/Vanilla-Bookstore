@@ -6,14 +6,16 @@
         <span>"<%= keyword %>"</span>
       </p>
       <div class="select-view-wrapper" gorilla-click="selectView">
-        <button ><img class="btn-list-view selected" src="/assets/images/btn_list_type.png" data-view="list"></button>
-        <button ><img class="btn-card-view" src="/assets/images/btn_card_type.png" data-view="card"></button>
+        <img class="btn-list-view selected" src="/assets/images/btn_list_type.png" data-view="list">
+        <img class="btn-card-view" src="/assets/images/btn_card_type.png" data-view="card">
       </div>
     </div>
     <div class="select-sort-wrapper" gorilla-click="selectSort">
-        <button class="btn-sort-similar <% if (sortType === 'sim') { %>selected<% } %>" data-sort="sim">Search Similarity</button><span class="space-between">|</span>
-      <button class="btn-sort-new <% if (sortType === 'date') { %>selected<% } %>" data-sort="date">Newest Arrivals</button><span class="space-between">|</span>
-      <button class="btn-sort-count <% if (sortType === 'count') { %>selected<% } %>" data-sort="count">Featured</button>
+      <button class="btn-sort-similar <% if (sortType === 'sim') { %> selected <% } %>" data-sort="sim">Search Similarity</button>
+      <span class="space-between">|</span>
+      <button class="btn-sort-new <% if (sortType === 'date') { %> selected <% } %>" data-sort="date">Newest Arrivals</button>
+      <span class="space-between">|</span>
+      <button class="btn-sort-count <% if (sortType === 'count') { %> selected <% } %>" data-sort="count">Featured</button>
     </div>
     <div class="list-content-area">
       <% if (contentData.length) { %>
@@ -30,7 +32,10 @@
               </a>
               <p class="list-content-subtitle"><%= item.subTitle %></p>
               <div class="list-content-wrapper">
-                <p class="list-content-author"><%= item.author %> | <%= item.publisher %> | <%= item.pubdate %> | <a class="list-content-url" href="<%= item.link %>"><%= item.link %></a></p>
+                <p class="list-content-author">
+                  <%= item.author %> | <%= item.publisher %> | <%= item.pubdate %> | 
+                  <a class="list-content-url" href="<%= item.link %>"><%= item.link %></a>
+                </p>
                 <p class="list-content-description"><%= item.description %></p>
                 <p class="list-content-price-wrapper">
                   <span>구매</span>
@@ -54,14 +59,16 @@
         <span>"<%= keyword %>"</span>
       </p>
       <div class="select-view-wrapper" gorilla-click="selectView">
-        <button ><img class="btn-list-view" src="/assets/images/btn_list_type.png" data-view="list"></button>
-        <button ><img class="btn-card-view selected" src="/assets/images/btn_card_type.png" data-view="card"></button>
+        <img class="btn-list-view" src="/assets/images/btn_list_type.png" data-view="list">
+        <img class="btn-card-view selected" src="/assets/images/btn_card_type.png" data-view="card">
       </div>
     </div>
     <div class="select-sort-wrapper" gorilla-click="selectSort">
-      <button class="btn-sort-similar <% if (sortType === 'sim') { %>selected<% } %>" data-sort="sim">Search Similarity</button><span class="space-between">|</span>
-      <button class="btn-sort-new <% if (sortType === 'date') { %>selected<% } %>" data-sort="date">Newest Arrivals</button><span class="space-between">|</span>
-      <button class="btn-sort-count <% if (sortType === 'count') { %>selected<% } %>" data-sort="count">Featured</button>
+      <button class="btn-sort-similar <% if (sortType === 'sim') { %> selected <% } %>" data-sort="sim">Search Similarity</button>
+      <span class="space-between">|</span>
+      <button class="btn-sort-new <% if (sortType === 'date') { %> selected <% } %>" data-sort="date">Newest Arrivals</button>
+      <span class="space-between">|</span>
+      <button class="btn-sort-count <% if (sortType === 'count') { %> selected <% } %>" data-sort="count">Featured</button>
     </div>
     <div class="card-content-area">
       <% if (contentData.length) { %>
