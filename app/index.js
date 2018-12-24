@@ -214,8 +214,8 @@ function cleansData(bookData) {
     bookData.discount = addComma(bookData.price);
     bookData.price = null;
   } else {
-    bookData.price = addComma(bookData.price);
     bookData.discount = addComma(bookData.discount);
+    bookData.price = addComma(bookData.price);
   }
 
   if (!bookData.image) {
