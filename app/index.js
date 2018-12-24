@@ -23,8 +23,6 @@ const app = new Gorilla.Component(appTemplate, {
   contents: new Gorilla.Component(firstPageTemplate),
 });
 
-const loader = new Gorilla.Component(loaderTemplate);
-
 app.handleReloadClick = function(ev) {
   location.reload();
 };
@@ -62,13 +60,14 @@ Gorilla.renderToDOM(
   document.querySelector('#root'),
 );
 
+const $loader = new Gorilla.Component(loaderTemplate);
 const $inputBox = document.getElementsByClassName('gnb-input-box')[0];
 const $bookData = new CreateBookData();
 const $errorLog = [];
 let $startNumber = 1;
 let $beforeYOffset = 0;
-let $displaySearchCount = 0;
-let $contentComponent;
+let $displaySearchCount;
+let $contentsComponent;
 let $keyword;
 let $viewType = 'list';
 let $sortType = 'sim';
@@ -113,7 +112,6 @@ function controlByScroll(ev) {
   }
 
   if ((yOffset + 500) / document.body.offsetHeight >= 0.85 && $isDone) {
-    debugger;
     getDataFromApi($keyword, $startNumber, $sortType);
   }
 }
@@ -131,27 +129,28 @@ function getDataFromApi(inputText, startNumber, option) {
   httpRequest.onreadystatechange = function() {
     if (httpRequest.readyState === httpRequest.DONE) {
       if (httpRequest.status === 200) {
-        const bookMasterData = JSON.parse(httpRequest.response);
+        const respondedBookData = JSON.parse(httpRequest.response);
 
-        if (bookMasterData.items.length) {
-          $totalSearchCount = bookMasterData.total;
-          $displaySearchCount = bookMasterData.display;
+        if (respondedBookData.items.length) {
+          $totalSearchCount = respondedBookData.total;
+          $displaySearchCount = respondedBookData.display;
 
-          for (let i = 0; i < bookMasterData.items.length; i++) {
-            compressUrl(bookMasterData.items[i], i, $startNumber);
+          for (let i = 0; i < respondedBookData.items.length; i++) {
+            compressUrl(respondedBookData.items[i], i, $startNumber);
           }
 
-          $startNumber = startNumber + bookMasterData.display;
-        } else if (!Object.keys($bookData.getData()).length) {
-          $bookData.resetData();
-          $totalSearchCount = 0;
-          makeComponent([]);
+          $startNumber = startNumber + respondedBookData.display;
         } else {
-          loader.destroy();
+          if (!Object.keys($bookData.getData()).length) {
+            $totalSearchCount = 0;
+            createComponent([]);
+          } else {
+            $loader.destroy();
+          }
         }
       } else {
         $inputBox.disabled = false;
-        loader.destroy();
+        $loader.destroy();
         $errorLog.push({[keyword]: httpRequest.status});
 
         return alert('Please try again later.');
@@ -163,7 +162,7 @@ function getDataFromApi(inputText, startNumber, option) {
   httpRequest.send();
 
   Gorilla.renderToDOM(
-    loader,
+    $loader,
     document.querySelector('#root'),
   );
 }
@@ -175,15 +174,15 @@ function compressUrl(bookData, iterationIndex, startIndex) {
   httpRequest.onreadystatechange = function() {
     if (httpRequest.readyState === httpRequest.DONE) {
       if (httpRequest.status === 200) {
-        const responsedUrl = JSON.parse(httpRequest.response);
+        const respondedUrl = JSON.parse(httpRequest.response);
 
-        bookData.link = responsedUrl.result.url;
+        bookData.link = respondedUrl.result.url;
         $bookData.storeData([startIndex + iterationIndex - 1], cleansData(bookData));
 
         $displaySearchCount--;
 
         if ($displaySearchCount === 0) {
-          makeComponent($bookData.getData());
+          createComponent($bookData.getData());
         }
       } else {
         $errorLog.push({[bookData]: httpRequest.status});
@@ -196,19 +195,19 @@ function compressUrl(bookData, iterationIndex, startIndex) {
 }
 
 function cleansData(bookData) {
-  const indexofBracket = bookData.title.indexOf('(');
+  const indexOfBracket = bookData.title.indexOf('(');
 
-  if (indexofBracket !== -1) {
-    bookData.subTitle = bookData.title.substring(indexofBracket + 1, bookData.title.length - 1);
-    bookData.title = bookData.title.substring(0, indexofBracket);
+  if (indexOfBracket !== -1) {
+    bookData.subTitle = bookData.title.substring(indexOfBracket + 1, bookData.title.length - 1);
+    bookData.title = bookData.title.substring(0, indexOfBracket);
   }
 
-  bookData.description = bookData.description.replace(/\s\s+/g, ' ');
-  bookData.description = bookData.description.replace(/<(\/b|b)([^>]*)>/g, '');
-  bookData.description = bookData.description.replace(/^\&\w*;|\w*;/g, '');
+  bookData.description = bookData.description.replace(/\s\s+/gm, ' ');
+  bookData.description = bookData.description.replace(/<b>|<\/b>/gm, '');
+  bookData.description = bookData.description.replace(/^\&\w*;|\w*;/gm, '');
 
   if (bookData.description.length >= 50) {
-    bookData.description = bookData.description.substring(0, 50) + '...';
+    bookData.description = bookData.description.substring(0, 35) + '<span>' + bookData.description.substring(35, 50) + '</span>';
   }
 
   if (!bookData.discount) {
@@ -238,60 +237,60 @@ function cleansData(bookData) {
   }
 }
 
-function makeComponent(bookData) {
-  if (!$contentComponent) {
-    $contentComponent = new Gorilla.Component(contentsTemplate, {
+function createComponent(bookData) {
+  if (!$contentsComponent) {
+    $contentsComponent = new Gorilla.Component(contentsTemplate, {
       viewType: $viewType,
       sortType: $sortType,
       keyword: $keyword,
       totalCount: $totalSearchCount,
-      contentData: Object.values(bookData),
+      contentsData: Object.values(bookData),
     });
 
-    $contentComponent.selectView = function(ev) {
+    $contentsComponent.selectView = function(ev) {
       const viewType = ev.target.dataset.view;
 
       if (viewType !== $viewType) {
         $viewType = viewType;
-        $contentComponent = null;
-        makeComponent($bookData.getData());
+        $contentsComponent = null;
+        createComponent($bookData.getData());
       }
     };
 
-    $contentComponent.selectSort = function(ev) {
+    $contentsComponent.selectSort = function(ev) {
       const sortType = ev.target.dataset.sort;
 
       if (sortType !== $sortType) {
         $sortType = sortType;
-        $contentComponent = null;
+        $contentsComponent = null;
         $bookData.resetData();
         $startNumber = 1;
         getDataFromApi($keyword, 1, sortType);
       }
     };
 
-    $contentComponent.hoverImageIn = function(ev) {
+    $contentsComponent.hoverImageIn = function(ev) {
       ev.currentTarget.nextElementSibling.classList.remove('hidden');
     };
 
-    $contentComponent.hoverImageOut = function(ev) {
+    $contentsComponent.hoverImageOut = function(ev) {
       ev.currentTarget.classList.add('hidden');
     };
 
-    app._view.children.contents = $contentComponent;
+    app._view.children.contents = $contentsComponent;
     app.render();
   } else {
-    $contentComponent.totalCount = $totalSearchCount;
-    $contentComponent.keyword = $keyword;
-    $contentComponent.contentData = Object.values(bookData);
+    $contentsComponent.totalCount = $totalSearchCount;
+    $contentsComponent.keyword = $keyword;
+    $contentsComponent.contentsData = Object.values(bookData);
   }
 
   window.scroll({top: $beforeYOffset});
   $inputBox.disabled = false;
   $isDone = true;
 
-  if (loader._element) {
-    loader.destroy();
+  if ($loader._element) {
+    $loader.destroy();
   }
 }
 

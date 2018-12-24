@@ -3,8 +3,8 @@
 // http://www.paulirish.com/2012/box-sizing-border-box-ftw/
 html, body {
     min-width: 700px;
-    margin: 0;
     box-sizing: border-box;
+    margin: 0;
     font-family: 'lato', 'Nanum Gothic', sans-serif;
     color: rgba(0, 0, 0, 0.7);
 }
@@ -27,34 +27,33 @@ input, button, a {
 
 header {
     display: flex;
+    align-items: center;
     position: fixed;
     top: 0;
-    align-items: center;
     z-index: 1;
     width: 100%;
     min-width: 700px;
     height: 70px;
-    border-bottom: 0.5px solid rgba(0, 0, 0, 0.2);
-    background-color: rgb(255, 246, 126);
+    background: linear-gradient(to right, rgba(255, 232, 150, 0.4), rgb(255, 255, 255), rgba(247, 202, 201, 0.4));
     transition: top 0.3s;
 }
 
 header.scroll_bottom {
     top: -60px;
-    opacity: 0.5;
 }
 
 .gnb-service-name {
     flex: 1;
     display: flex;
     align-items: baseline;
+    min-width: 350px;
     font-family: 'Shadows Into Light', sans-serif;
 }
 
 .gnb-service-name > h1 {
     display: flex;
     align-items: center;
-    padding-left: 60px;
+    padding-left: 38px;
     cursor: pointer;
 }
 
@@ -71,36 +70,41 @@ header.scroll_bottom {
 }
 
 .gnb-search-bar {
-    padding-right: 20px;
+    flex: 2;
+    padding-right: 35px;
+    text-align: right;
 }
 
 .gnb-input-box {
-    width: 200px;
-    height: 15px;
+    width: 80%;
+    min-width: 200px;
+    height: 20px;
     padding: 5px 10px;
-    border: 0.5px solid rgba(0, 0, 0, 0.3);
-    border-radius: 10px;
-    font-size: 12px;
+    border: 0.5px solid rgba(0, 0, 0, 0);
+    border-bottom: 0.5px solid rgba(0, 0, 0, 0.3);
+    font-size: 14px;
     text-align: center;
 }
 
 .gnb-input-box::placeholder {
-    text-align: center;
+    font-size: 13px;
     font-weight: 100;
+    text-align: center;
 }
 
 .gnb-input-box:focus, .gnb-input-box:hover, .gnb-btn-search:hover{
-    border: 0.5px solid black;
-    color: black;
+    border: 0.5px solid rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
 }
 
 .gnb-btn-search {
     width: 25px;
-    height: 25px;
+    height: 20px;
+    padding: 4px 5px;
+    border: 0.5px solid rgba(0, 0, 0, 0);
+    border-bottom: 0.5px solid rgba(0, 0, 0, 0.3);
+    font-size: 12px;
     text-align: center;
-    border: 0.5px solid rgba(0, 0, 0, 0.3);
-    border-radius: 10px;
-    font-size: 11px;
     color: rgba(0, 0, 0, 0.5);
     cursor: pointer;
 }
@@ -110,12 +114,14 @@ header.scroll_bottom {
     top: 35%;
     width: 500px;
     user-select: none;
+    -webkit-user-select: none;
 }
 
 .content-container {
     display: flex;
     flex-direction: column;
     align-items: center;
+    min-width: 700px;
     min-height: calc(100vh - 30px);
     padding-top: 70px;
 }
@@ -157,19 +163,19 @@ header.scroll_bottom {
 
 .select-sort-wrapper > button {
     border-radius: 10px;
-    cursor: pointer;
     opacity: 0.7;
+    cursor: pointer;
 }
 
 .space-between {
-    font-size: 11px;
     margin: 0px 5px;
+    font-size: 11px;
     color: rgba(0, 0, 0, 0.5);
 }
 
 .selected {
-    color: black;
     font-weight: bold;
+    color: black;
     opacity: 0.8;
 }
 
@@ -205,8 +211,8 @@ header.scroll_bottom {
 .list-right-box {
     flex: 1;
     display: flex;
-    position: relative;
     flex-direction: column;
+    position: relative;
     min-height: 150px;
     padding-left: 25px;
 }
@@ -233,6 +239,12 @@ header.scroll_bottom {
     margin-bottom: 35px;
     font-size: 11px;
     color: rgba(0, 0, 0, 0.7);
+}
+
+.list-content-description > span {
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.1));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .list-content-url {
@@ -281,9 +293,9 @@ span.list-content-discount, span.card-content-discount {
 
 .card-top-box {
     display: flex;
-    position: relative;
     align-items: flex-end;
     justify-content: center;
+    position: relative;
     height: 180px;
 }
 
@@ -294,14 +306,20 @@ span.list-content-discount, span.card-content-discount {
     width: 120px;
     height: 155px;
     padding: 10px;
+    border-radius: 10px;
     font-size: 13px;
     font-weight: 100;
-    border-radius: 10px;
     background-color: black;
     color: white;
-    opacity: 0.8;
     line-height: 30px;
+    opacity: 0.8;
     cursor:pointer;
+}
+
+.card-content-description > span {
+    background: linear-gradient(to right, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.1));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .card-top-box img {

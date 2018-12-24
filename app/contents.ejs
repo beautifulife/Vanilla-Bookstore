@@ -18,8 +18,8 @@
       <button class="btn-sort-count <% if (sortType === 'count') { %> selected <% } %>" data-sort="count">Featured</button>
     </div>
     <div class="list-content-area">
-      <% if (contentData.length) { %>
-        <% contentData.forEach(function(item) { %>
+      <% if (contentsData.length) { %>
+        <% contentsData.forEach(function(item) { %>
           <div class="list-content-container">
             <div class="list-left-box">
               <a href="<%= item.link %>">
@@ -71,8 +71,8 @@
       <button class="btn-sort-count <% if (sortType === 'count') { %> selected <% } %>" data-sort="count">Featured</button>
     </div>
     <div class="card-content-area">
-      <% if (contentData.length) { %>
-        <% contentData.forEach(function(item){ %>
+      <% if (contentsData.length) { %>
+        <% contentsData.forEach(function(item){ %>
           <div class="card-content-container">
             <div class="card-top-box">
               <a href="<%= item.link %>">
