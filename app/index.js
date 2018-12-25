@@ -23,10 +23,6 @@ const app = new Gorilla.Component(appTemplate, {
   contents: new Gorilla.Component(firstPageTemplate),
 });
 
-app.handleReloadClick = function(ev) {
-  location.reload();
-};
-
 app.handleInputKeypress = function(ev) {
   if (ev.currentTarget.value && ev.code === 'Enter') {
     if (ev.currentTarget.value.length > 20) {
