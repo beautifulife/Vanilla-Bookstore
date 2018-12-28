@@ -31,7 +31,7 @@ app.handleInputKeypress = function(ev) {
       return alert('Up to 20 characters possible');
     }
 
-    $bookData.resetData();
+    vanillaBookStore.bookData.resetData();
     getDataFromApi(ev.currentTarget.value, 1);
     ev.currentTarget.value = null;
   } else {
@@ -56,36 +56,41 @@ Gorilla.renderToDOM(
   document.querySelector('#root'),
 );
 
-const $loader = new Gorilla.Component(loaderTemplate);
 const $inputBox = document.getElementsByClassName('gnb-input-box')[0];
-const $bookData = new CreateBookData();
-const $errorLog = [];
-let $startNumber = 1;
-let $beforeYOffset = 0;
-let $displaySearchCount;
-let $contentsComponent;
-let $keyword;
-let $viewType = 'list';
-let $sortType = 'sim';
-let $isDone = true;
-let $totalSearchCount = 0;
+const vanillaBookStore = {
+  loader: new Gorilla.Component(loaderTemplate),
+  bookData: BookData(),
+  errorLog: [],
+  startNumber: 1,
+  beforeYOffset: 0,
+  displaySearchCount: 0,
+  contentsComponent: undefined,
+  keyword: '',
+  viewType: 'list',
+  sortType: 'sim',
+  isDone: true,
+  totalSearchCount: 0,
+};
 
 window.addEventListener('scroll', controlByScroll);
 
-function CreateBookData() {
+function BookData() {
   let _bookData = {};
+  const methods = {};
 
-  CreateBookData.prototype.getData = function() {
+  methods.getData = function() {
     return _bookData;
   };
 
-  CreateBookData.prototype.storeData = function(key, value) {
+  methods.storeData = function(key, value) {
     _bookData[key] = value;
   };
 
-  CreateBookData.prototype.resetData = function() {
+  methods.resetData = function() {
     _bookData = {};
   };
+
+  return methods;
 }
 
 function controlByScroll(ev) {
@@ -99,16 +104,16 @@ function controlByScroll(ev) {
     toUpwardButton.classList.add('hidden');
   }
 
-  if (yOffset >= 300 && yOffset - $beforeYOffset >= 0) {
+  if (yOffset >= 300 && yOffset - vanillaBookStore.beforeYOffset >= 0) {
     header.classList.add('scroll_bottom');
-    $beforeYOffset = yOffset;
-  } else if (yOffset - $beforeYOffset < 0) {
+    vanillaBookStore.beforeYOffset = yOffset;
+  } else if (yOffset - vanillaBookStore.beforeYOffset < 0) {
     header.classList.remove('scroll_bottom');
-    $beforeYOffset = yOffset;
+    vanillaBookStore.beforeYOffset = yOffset;
   }
 
-  if ((yOffset + 500) / document.body.offsetHeight >= 0.85 && $isDone) {
-    getDataFromApi($keyword, $startNumber, $sortType);
+  if ((yOffset + 500) / document.body.offsetHeight >= 0.85 && vanillaBookStore.isDone) {
+    getDataFromApi(vanillaBookStore.keyword, vanillaBookStore.startNumber, vanillaBookStore.sortType);
   }
 }
 
@@ -118,9 +123,9 @@ function getDataFromApi(inputText, startNumber, option) {
   const httpRequest = new XMLHttpRequest();
   const url = `http://localhost:3000/v1/search/book?query=${keyword}&start=${startNumber}&display=20&sort=${sortOption}`;
 
-  $isDone = false;
+  vanillaBookStore.isDone = false;
   $inputBox.disabled = true;
-  $keyword = inputText;
+  vanillaBookStore.keyword = inputText;
 
   httpRequest.onreadystatechange = function() {
     if (httpRequest.readyState === httpRequest.DONE) {
@@ -128,28 +133,28 @@ function getDataFromApi(inputText, startNumber, option) {
         const respondedBookData = JSON.parse(httpRequest.response);
 
         if (respondedBookData.items.length) {
-          $totalSearchCount = respondedBookData.total;
-          $displaySearchCount = respondedBookData.display;
+          vanillaBookStore.totalSearchCount = respondedBookData.total;
+          vanillaBookStore.displaySearchCount = respondedBookData.display;
 
           for (let i = 0; i < respondedBookData.items.length; i++) {
-            compressUrl(respondedBookData.items[i], i, $startNumber);
+            compressUrl(respondedBookData.items[i], i, vanillaBookStore.startNumber);
           }
 
-          $startNumber = startNumber + respondedBookData.display;
+          vanillaBookStore.startNumber = startNumber + respondedBookData.display;
         } else {
-          if (!Object.keys($bookData.getData()).length) {
-            $totalSearchCount = 0;
+          if (!Object.keys(vanillaBookStore.bookData.getData()).length) {
+            vanillaBookStore.totalSearchCount = 0;
             createComponent([]);
           } else {
-            $loader.destroy();
+            vanillaBookStore.loader.destroy();
           }
         }
       } else {
         $inputBox.disabled = false;
-        $loader.destroy();
-        $errorLog.push({[keyword]: httpRequest.status});
+        vanillaBookStore.loader.destroy();
+        vanillaBookStore.errorLog.push({[keyword]: httpRequest.status});
 
-        return alert('Please try again later.');
+        alert('Please try again later.');
       }
     }
   };
@@ -158,14 +163,14 @@ function getDataFromApi(inputText, startNumber, option) {
   httpRequest.send();
 
   Gorilla.renderToDOM(
-    $loader,
+    vanillaBookStore.loader,
     document.querySelector('#root'),
   );
 }
 
 function compressUrl(bookData, iterationIndex, startIndex) {
   const httpRequest = new XMLHttpRequest();
-  const url = 'http://localhost:3000/v1/util/shorturl?url=' + bookData.link;
+  const url = `http://localhost:3000/v1/util/shorturl?url=${bookData.link}`;
 
   httpRequest.onreadystatechange = function() {
     if (httpRequest.readyState === httpRequest.DONE) {
@@ -173,15 +178,15 @@ function compressUrl(bookData, iterationIndex, startIndex) {
         const respondedUrl = JSON.parse(httpRequest.response);
 
         bookData.link = respondedUrl.result.url;
-        $bookData.storeData([startIndex + iterationIndex - 1], cleansData(bookData));
+        vanillaBookStore.bookData.storeData([startIndex + iterationIndex - 1], cleansData(bookData));
 
-        $displaySearchCount--;
+        vanillaBookStore.displaySearchCount--;
 
-        if ($displaySearchCount === 0) {
-          createComponent($bookData.getData());
+        if (vanillaBookStore.displaySearchCount === 0) {
+          createComponent(vanillaBookStore.bookData.getData());
         }
       } else {
-        $errorLog.push({[bookData]: httpRequest.status});
+        vanillaBookStore.errorLog.push({[bookData]: httpRequest.status});
       }
     }
   };
@@ -234,59 +239,59 @@ function cleansData(bookData) {
 }
 
 function createComponent(bookData) {
-  if (!$contentsComponent) {
-    $contentsComponent = new Gorilla.Component(contentsTemplate, {
-      viewType: $viewType,
-      sortType: $sortType,
-      keyword: $keyword,
-      totalCount: $totalSearchCount,
+  if (!vanillaBookStore.contentsComponent) {
+    vanillaBookStore.contentsComponent = new Gorilla.Component(contentsTemplate, {
+      viewType: vanillaBookStore.viewType,
+      sortType: vanillaBookStore.sortType,
+      keyword: vanillaBookStore.keyword,
+      totalCount: vanillaBookStore.totalSearchCount,
       contentsData: Object.values(bookData),
     });
 
-    $contentsComponent.selectView = function(ev) {
+    vanillaBookStore.contentsComponent.selectView = function(ev) {
       const viewType = ev.target.dataset.view;
 
-      if (viewType !== $viewType) {
-        $viewType = viewType;
-        $contentsComponent = null;
-        createComponent($bookData.getData());
+      if (viewType !== vanillaBookStore.viewType) {
+        vanillaBookStore.viewType = viewType;
+        vanillaBookStore.contentsComponent = null;
+        createComponent(vanillaBookStore.bookData.getData());
       }
     };
 
-    $contentsComponent.selectSort = function(ev) {
+    vanillaBookStore.contentsComponent.selectSort = function(ev) {
       const sortType = ev.target.dataset.sort;
 
-      if (sortType !== $sortType) {
-        $sortType = sortType;
-        $contentsComponent = null;
-        $bookData.resetData();
-        $startNumber = 1;
-        getDataFromApi($keyword, 1, sortType);
+      if (sortType !== vanillaBookStore.sortType) {
+        vanillaBookStore.sortType = sortType;
+        vanillaBookStore.contentsComponent = null;
+        vanillaBookStore.bookData.resetData();
+        vanillaBookStore.startNumber = 1;
+        getDataFromApi(vanillaBookStore.keyword, 1, sortType);
       }
     };
 
-    $contentsComponent.hoverImageIn = function(ev) {
+    vanillaBookStore.contentsComponent.hoverImageIn = function(ev) {
       ev.currentTarget.nextElementSibling.classList.remove('hidden');
     };
 
-    $contentsComponent.hoverImageOut = function(ev) {
+    vanillaBookStore.contentsComponent.hoverImageOut = function(ev) {
       ev.currentTarget.classList.add('hidden');
     };
 
-    app._view.children.contents = $contentsComponent;
+    app._view.children.contents = vanillaBookStore.contentsComponent;
     app.render();
   } else {
-    $contentsComponent.totalCount = $totalSearchCount;
-    $contentsComponent.keyword = $keyword;
-    $contentsComponent.contentsData = Object.values(bookData);
+    vanillaBookStore.contentsComponent.totalCount = vanillaBookStore.totalSearchCount;
+    vanillaBookStore.contentsComponent.keyword = vanillaBookStore.keyword;
+    vanillaBookStore.contentsComponent.contentsData = Object.values(bookData);
   }
 
-  window.scroll({top: $beforeYOffset});
+  window.scroll({top: vanillaBookStore.beforeYOffset});
   $inputBox.disabled = false;
-  $isDone = true;
+  vanillaBookStore.isDone = true;
 
-  if ($loader._element) {
-    $loader.destroy();
+  if (vanillaBookStore.loader._element) {
+    vanillaBookStore.loader.destroy();
   }
 }
 
